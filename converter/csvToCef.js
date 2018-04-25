@@ -1,5 +1,19 @@
-var fs = require('fs'),
-	readline = require('readline');
+/*
+* @Author: paps
+* 
+* GridPocket SAS Copyright (C) 2016 All Rights Reserved
+* This source is property of GridPocket SAS. Please email contact@gridpocket.com for more information.
+* 
+* @File name:	csvToCef.js
+* @Date:   2018-04-25
+* @Last Modified by:   paps
+* @Last Modified time: 2018-04-25
+*
+* @Description: This script enables to convert log files from CSV format to CEF format
+*/
+
+var fs = require('fs');
+var readline = require('readline');
 
 const fileNameConnectionDetected = "Router_Vendor_Router_CED_1.0_100_ConnectionDetected_5_.txt";
 const fileNameDomainGeneration = "DNS_Vendor_DNS_CED_1.0_100_DNSquery_5_.txt";
@@ -9,7 +23,7 @@ const fileNameDomainGeneration = "DNS_Vendor_DNS_CED_1.0_100_DNSquery_5_.txt";
 	Output template => CEF:0|Router_Vendor|Router_CED|1.0|100|ConnectionDetected|5|
 */
 function produceInitialContentOfCefFile(fileName, cb){
-	var initialContentOfCefFile = fileName.split('_');
+	let initialContentOfCefFile = fileName.split('_');
 		initialContentOfCefFile = 'CEF:0|'+initialContentOfCefFile[0]+'_'+initialContentOfCefFile[1]+'|'+initialContentOfCefFile[2]+'_'+initialContentOfCefFile[3]+'|'+initialContentOfCefFile[4]+'|'+initialContentOfCefFile[5]+'|'+initialContentOfCefFile[6]+'|'+initialContentOfCefFile[7]+'|';
 	cb(initialContentOfCefFile);
 }
@@ -20,7 +34,7 @@ function produceInitialContentOfCefFile(fileName, cb){
 */
 function processConnectionDetected(fileName){
 	produceInitialContentOfCefFile(fileName, function(part1){
-		var lineReader = readline.createInterface({
+		let lineReader = readline.createInterface({
 			input: fs.createReadStream(fileName)
 		});
 
@@ -29,9 +43,13 @@ function processConnectionDetected(fileName){
 
 			lineReader.on('line', function (line) {
 				line = line.split(' ');
-				var newLine = part1 + 'src=' + line[4].split(':')[0] + ' spt=' + line[4].split(':')[1];
-				newLine += 'dst=' + line[6].split(':')[0] + ' dpt=' + line[6].split(':')[1];
-				newLine += ' proto=' + line[3] + ' end=' + new Date(line[0]).getTime() + '\n';
+				let newLine = part1;
+				newLine += 'src=' + line[4].split(':')[0];
+				newLine += ' spt=' + line[4].split(':')[1];
+				newLine += 'dst=' + line[6].split(':')[0];
+				newLine += ' dpt=' + line[6].split(':')[1];
+				newLine += ' proto=' + line[3];
+				newLine += ' end=' + new Date(line[0]).getTime() + '\n';
 
 				fs.appendFile(fileName + '.cef', newLine, function(err){
 					if (err) throw err;
@@ -47,7 +65,7 @@ function processConnectionDetected(fileName){
 */
 function processDomainGeneration(fileName){
 	produceInitialContentOfCefFile(fileName, function(part1){
-		var lineReader = readline.createInterface({
+		let lineReader = readline.createInterface({
 			input: fs.createReadStream(fileName)
 		});
 
@@ -56,8 +74,12 @@ function processDomainGeneration(fileName){
 				
 			lineReader.on('line', function(line){
 				line = line.split(' ');
-				var newLine = part1 + 'src=' + line[3].split('#')[0] + ' spt=' + line[3].split('#')[1] + ' msg=' + line[6];
-				for(i=7;i<line.length;i++){
+				let newLine = part1;
+				newLine += 'src=' + line[3].split('#')[0];
+				newLine += ' spt=' + line[3].split('#')[1];
+				newLine += ' msg=' + line[7];
+				//Need to copy from 'IN A -EDC (192.168.1.9)' with IN at the index 8
+				for(i=8;i<line.length;i++){
 					newLine += ' ' + line[i];
 				}
 				newLine += ' end=' + new Date(line[0] +', '+ line[1]).getTime() + '\n';
