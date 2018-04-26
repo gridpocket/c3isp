@@ -7,7 +7,7 @@
 * @File name:	csvToCef.js
 * @Date:   2018-04-25
 * @Last Modified by:   paps
-* @Last Modified time: 2018-04-25
+* @Last Modified time: 2018-04-26
 *
 * @Description: This script enables to convert log files from CSV format to CEF format
 */
@@ -25,7 +25,7 @@ const fileNameDomainGeneration = "DNS_Vendor_DNS_CED_1.0_100_DNSquery_5_.txt";
 function produceInitialContentOfCefFile(fileName, cb){
 	let initialContentOfCefFile = fileName.split('_');
 		initialContentOfCefFile = 'CEF:0|'+initialContentOfCefFile[0]+'_'+initialContentOfCefFile[1]+'|'+initialContentOfCefFile[2]+'_'+initialContentOfCefFile[3]+'|'+initialContentOfCefFile[4]+'|'+initialContentOfCefFile[5]+'|'+initialContentOfCefFile[6]+'|'+initialContentOfCefFile[7]+'|';
-	cb(initialContentOfCefFile);
+	return initialContentOfCefFile;
 }
 
 /*Conversion of Connection detection inputs (fileNameConnectionDetected)
@@ -33,27 +33,27 @@ function produceInitialContentOfCefFile(fileName, cb){
 	Output template => CEF:0|Router_Vendor|Router_CED|1.0|100|ConnectionDetected|5|src=192.168.1.2 spt=24920dst=2.4.55.66 dpt=22126 proto=UDP end=1505433600000
 */
 function processConnectionDetected(fileName){
-	produceInitialContentOfCefFile(fileName, function(part1){
-		let lineReader = readline.createInterface({
-			input: fs.createReadStream(fileName)
-		});
+	const part1 = produceInitialContentOfCefFile(fileName);
 
-		fs.unlink(fileName + '.cef', function(err){
-			if(err) console.log('This file doesnt exist...');
+	let lineReader = readline.createInterface({
+		input: fs.createReadStream(fileName)
+	});
 
-			lineReader.on('line', function (line) {
-				line = line.split(' ');
-				let newLine = part1;
-				newLine += 'src=' + line[4].split(':')[0];
-				newLine += ' spt=' + line[4].split(':')[1];
-				newLine += 'dst=' + line[6].split(':')[0];
-				newLine += ' dpt=' + line[6].split(':')[1];
-				newLine += ' proto=' + line[3];
-				newLine += ' end=' + new Date(line[0]).getTime() + '\n';
+	fs.unlink(fileName + '.cef', function(err){
+		if(err) console.log('This file doesnt exist...');
 
-				fs.appendFile(fileName + '.cef', newLine, function(err){
-					if (err) throw err;
-				});
+		lineReader.on('line', function (line) {
+			line = line.split(' ');
+			let newLine = part1;
+			newLine += 'src=' + line[4].split(':')[0];
+			newLine += ' spt=' + line[4].split(':')[1];
+			newLine += 'dst=' + line[6].split(':')[0];
+			newLine += ' dpt=' + line[6].split(':')[1];
+			newLine += ' proto=' + line[3];
+			newLine += ' end=' + new Date(line[0]).getTime() + '\n';
+
+			fs.appendFile(fileName + '.cef', newLine, function(err){
+				if (err) throw err;
 			});
 		});
 	});
@@ -64,30 +64,30 @@ function processConnectionDetected(fileName){
 	Output template => CEF:0|DNS_Vendor|DNS_CED|1.0|100|DNSquery|5|src=192.168.1.2 spt=37239 msg=IN A -EDC (192.168.1.9) end=1505484703431
 */
 function processDomainGeneration(fileName){
-	produceInitialContentOfCefFile(fileName, function(part1){
-		let lineReader = readline.createInterface({
-			input: fs.createReadStream(fileName)
-		});
+	const part1 = produceInitialContentOfCefFile(fileName);
 
-		fs.unlink(fileName + '.cef', function(err){
-			if(err) console.log('This file doesnt exist...');
-				
-			lineReader.on('line', function(line){
-				line = line.split(' ');
-				let newLine = part1;
-				newLine += 'src=' + line[3].split('#')[0];
-				newLine += ' spt=' + line[3].split('#')[1];
-				newLine += ' msg=' + line[7];
-				//Need to copy from 'IN A -EDC (192.168.1.9)' with IN at the index 8
-				for(i=8;i<line.length;i++){
-					newLine += ' ' + line[i];
-				}
-				newLine += ' end=' + new Date(line[0] +', '+ line[1]).getTime() + '\n';
-				
-				fs.appendFile(fileName + '.cef', newLine, function(err){
-					if (err) throw err;
-				});	
-			});
+	let lineReader = readline.createInterface({
+		input: fs.createReadStream(fileName)
+	});
+
+	fs.unlink(fileName + '.cef', function(err){
+		if(err) console.log('This file doesnt exist...');
+			
+		lineReader.on('line', function(line){
+			line = line.split(' ');
+			let newLine = part1;
+			newLine += 'src=' + line[3].split('#')[0];
+			newLine += ' spt=' + line[3].split('#')[1];
+			newLine += ' msg=' + line[7];
+			//Need to copy from 'IN A -EDC (192.168.1.9)' with IN at the index 8
+			for(i=8;i<line.length;i++){
+				newLine += ' ' + line[i];
+			}
+			newLine += ' end=' + new Date(line[0] +', '+ line[1]).getTime() + '\n';
+			
+			fs.appendFile(fileName + '.cef', newLine, function(err){
+				if (err) throw err;
+			});	
 		});
 	});
 }
