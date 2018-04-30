@@ -64,7 +64,7 @@ function detectBody(lines) {
 
 function treatSubject(lines) {
   lines.forEach((line) => {
-    if (line.includes('Subject: ')) {
+    if (line.startsWith('Subject: ')) {
       json.object.email_attributes.subject.type = line.replace('Subject: ', '');
       json.object.email_attributes.subject.format = 'text';
       json.object.email_attributes.subject.characters = line.replace('Subject: ', '').length;
@@ -79,8 +79,14 @@ function treatSubject(lines) {
 
 function treatRecipient(lines) {
   lines.forEach((line) => {
-    if (line.includes('Delivered-To: ')) {
-      json.object.email_attributes.recipient_data.recipient_number = line.replace('Delivered-To: ', '').split(' ').length;
+    if (line.startsWith('Delivered-To: ')) {
+      const nbrRecipient = line.replace('Delivered-To: ', '').split(' ').length;
+      json.object.email_attributes.recipient_data.recipient_number = nbrRecipient;
+      if (nbrRecipient > 1) {
+        json.object.email_attributes.recipient_data.items.recipient.type = 'organisation';
+      } else {
+        json.object.email_attributes.recipient_data.items.recipient.type = 'individual';
+      }
       const emails = line.replace('Delivered-To: ', '').split(' ');
       json.object.email_attributes.recipient_data.items.recipient.address = emails;
       const names = [];
@@ -88,6 +94,15 @@ function treatRecipient(lines) {
         names.push(e.split('@')[0]);
       });
       json.object.email_attributes.recipient_data.items.recipient.name = names;
+    }
+    if (line.startsWith('To: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'To';
+    }
+    if (line.startsWith('Cc: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Cc';
+    }
+    if (line.startsWith('Bcc: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Bcc';
     }
   });
   if (lines[3].includes('by')) {
@@ -103,9 +118,9 @@ function treatSender(lines) {
       const sender = line.replace('From: ', '').replace(/'/g, ' ').split('<');
       sender.forEach((s) => {
         if (s.includes('@')) {
-          json.object.email_attributes.sender.address = s.replace('>', '');
+          json.object.email_attributes.sender.address = s.replace('>', '').replace('"', '');
           sender.pop(s);
-          json.object.email_attributes.sender.name = sender;
+          json.object.email_attributes.sender.name = sender[0].replace(/"/g, '');
         }
       });
     }
@@ -146,27 +161,45 @@ function detectLink(lines) {
   json.object.link.link_number = urls.length;
 }
 
-fs.readFile('email1.txt', 'utf8', (err, data) => {
-  if (err) {
-    throw err;
+
+function createdAt(lines) {
+  const BreakException = {};
+  try {
+    lines.forEach((line) => {
+      if (line.startsWith('Received: ') && line.endsWith('0000')) {
+        const sep = line.split(';');
+        const dateToStr = Date.parse(`${sep[1].replace('-0000', '')} GMT`);
+        json.object.email_attributes.created = new Date(dateToStr);
+        throw BreakException;
+      }
+    });
+  } catch (e) {
+    if (e !== BreakException) throw e;
   }
+}
 
-  email = data.split('\n');
-  json.object.email_attributes.email_size = unescape(encodeURIComponent(data)).length;
-  treatRecipient(email);
-  treatSender(email);
-  treatSubject(email);
-  detectBody(email);
-  detectLink(email);
-
-  return json;
-});
-
-
-app.get('/', (req, res) => {
+app.get('/:file', (req, res) => {
   res.setHeader('Content-Type', 'text/json');
-  const j = JSON.stringify(json, null, 2);
-  res.send(j);
+  new Promise((resolve, reject) => {
+    const { file } = req.params;
+    fs.readFile(`${file}.txt`, 'utf8', (err, data) => {
+      if (err) {
+        return reject();
+      }
+      email = data.split('\n');
+      json.object.email_attributes.email_size = unescape(encodeURIComponent(data)).length;
+      treatRecipient(email);
+      treatSender(email);
+      treatSubject(email);
+      detectBody(email);
+      detectLink(email);
+      createdAt(email);
+      return resolve();
+    });
+  }).then(() => {
+    const j = JSON.stringify(json, null, 2);
+    res.send(j);
+  });
 });
 
 app.listen(8080);
