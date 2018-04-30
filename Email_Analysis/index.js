@@ -1,157 +1,172 @@
 const fs = require('fs');
 const cld = require('cld');
-let lines;
-let json;
+const express = require('express');
 
-json = {
-  "type": "schema",
-  "id": "schema--id",
-  "name": "emailschema",
-  "description": "A general schema for describing an email",
-  "created": new Date(),
-  "modified": new Date(),
-  "version": 1,
-  "object": {
-    "object_type": "email",
-    "email_attributes": {
-      "subject": {
+const app = express();
+
+let email;
+
+const json = {
+  type: 'schema',
+  id: 'schema--id',
+  name: 'emailschema',
+  description: 'A general schema for describing an email',
+  created: new Date(),
+  modified: new Date(),
+  version: 1,
+  object: {
+    object_type: 'email',
+    email_attributes: {
+      subject: {
       },
-      "recipient_data": {
-        "items": {
-          "recipient": {
-            "recipient_category": "To"
-          }
-        }
+      recipient_data: {
+        items: {
+          recipient: {
+          },
+        },
       },
-      "sender": {
-      }
+      sender: {
+      },
     },
-    "link": {},
+    link: {},
   },
-  "required": ["sender", "recipient", "created", "body", "subject", "email_language"]
+  required: ['sender', 'recipient', 'created', 'body', 'subject', 'email_language'],
 };
 
 
 function detectBody(lines) {
   let body = [];
   let size = 0;
-  let email_format;
   let language;
   lines.forEach((line) => {
-    if (line.includes("<!DOCTYPE html>")) {
-      size = 1
+    if (line.includes('Message-ID: ')) {
+      json.object.email_attributes.email_id = line.replace('Message-ID: ', '').replace('>', '').replace('<', '');
     }
-    if (line.includes("</html>")) {
-      size = 0
-      body.push(line)
+    if (line.includes('<!DOCTYPE html>')) {
+      size = 1;
     }
-    if (size == 1) {
-      body.push(line)
+    if (line.includes('</html>')) {
+      size = 0;
+      body.push(line);
     }
-  })
+    if (size === 1) {
+      body.push(line);
+    }
+  });
   body = body.toString().replace(',', '\n');
   json.object.email_attributes.body = body;
-  json.object.email_attributes.email_size = unescape(encodeURIComponent(body)).length;
-  cld.detect(body, function (err, result) {
+  cld.detect(body, (err, result) => {
     language = result.languages[0].name;
-    json.object.email_attributes.email_language = language.toLowerCase()
+    json.object.email_attributes.email_language = language.toLowerCase();
   });
 }
 
 
 function treatSubject(lines) {
   lines.forEach((line) => {
-    if (line.includes("Subject: ")) {
-      json.object.email_attributes.subject.type = line.replace("Subject: ", "");
-      json.object.email_attributes.subject.format = "text";
-      json.object.email_attributes.subject.characters = line.replace("Subject: ", "").length;
-      cld.detect(line, function (err, result) {
-        language = result.languages[0].name;
-        json.object.email_attributes.subject.language = language.toLowerCase()
+    if (line.includes('Subject: ')) {
+      json.object.email_attributes.subject.type = line.replace('Subject: ', '');
+      json.object.email_attributes.subject.format = 'text';
+      json.object.email_attributes.subject.characters = line.replace('Subject: ', '').length;
+      cld.detect(line, (err, result) => {
+        const language = result.languages[0].name;
+        json.object.email_attributes.subject.language = language.toLowerCase();
       });
     }
-  })
+  });
 }
 
 
 function treatRecipient(lines) {
   lines.forEach((line) => {
-    if (line.includes("Delivered-To: ")) {
-      json.object.email_attributes.recipient_data.recipient_number = line.replace("Delivered-To: ", "").split(" ").length;
-      let emails = line.replace("Delivered-To: ", "").split(" ");
+    if (line.includes('Delivered-To: ')) {
+      json.object.email_attributes.recipient_data.recipient_number = line.replace('Delivered-To: ', '').split(' ').length;
+      const emails = line.replace('Delivered-To: ', '').split(' ');
       json.object.email_attributes.recipient_data.items.recipient.address = emails;
-      let names = []
-      emails.forEach(e => {
-        names.push(e.split("@")[0])
-      })
+      const names = [];
+      emails.forEach((e) => {
+        names.push(e.split('@')[0]);
+      });
       json.object.email_attributes.recipient_data.items.recipient.name = names;
     }
-  })
-  if (lines[3].includes("by")){
-    let ipLine= lines[3].split(" ");
-    json.object.email_attributes.recipient_data.items.recipient.ip = ipLine[ipLine.length-1].replace("[","").replace("]","").replace(")","").replace("(","")
+  });
+  if (lines[3].includes('by')) {
+    const ipLine = lines[3].split(' ');
+    json.object.email_attributes.recipient_data.items.recipient.ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '').replace('(', '');
   }
 }
 
 
 function treatSender(lines) {
   lines.forEach((line) => {
-    if (line.includes("From: ")) {
-      let sender = line.replace("From: ", "").replace(/"/g," ").split(" ");
-      sender.forEach( s=> {
-        if (s.includes("@")){
-          json.object.email_attributes.sender.address= s.replace(">","").replace("<","");
-          sender.pop(s)
-          json.object.email_attributes.sender.name= sender;
+    if (line.includes('From: ')) {
+      const sender = line.replace('From: ', '').replace(/'/g, ' ').split('<');
+      sender.forEach((s) => {
+        if (s.includes('@')) {
+          json.object.email_attributes.sender.address = s.replace('>', '');
+          sender.pop(s);
+          json.object.email_attributes.sender.name = sender;
         }
-      })
+      });
     }
-    if (line.includes("Received: from ")) {
-        let ipLine =line.split(' ')
-        let ip = ipLine[ipLine.length-1].replace("[","").replace("]","").replace(")","")
-        json.object.email_attributes.sender.ip= ip
+    if (line.includes('Received: from ')) {
+      const ipLine = line.split(' ');
+      const ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '');
+      json.object.email_attributes.sender.ip = ip;
     }
-  })
+  });
 }
 
 function detectLink(lines) {
-  let urls = [];
+  const urls = [];
 
   lines.forEach((line) => {
-    if (line.includes("http://")) {
-      let l = line.split('"').join(' ').split(" ");
-      l.forEach(url => {
-        if (url.includes("http://")) {
-          urls.push(url)
+    if (line.includes('http://')) {
+      const l = line.split('"').join(' ').split(' ');
+      l.forEach((u) => {
+        let url = u;
+        if (url.includes('http://')) {
+          if (url.startsWith('http://') && url.endsWith('/')) {
+            urls.push(url);
+          } else {
+            while (!url.startsWith('http://')) {
+              url = url.substr(1);
+            }
+            if (url.endsWith('>')) {
+              url = url.slice(0, -1);
+            }
+            urls.push(url);
+          }
         }
-      })
+      });
     }
   });
 
-  json.object.link.links = urls;
+  json.object.link.type = urls;
+  json.object.link.link_number = urls.length;
 }
 
-fs.readFile('email1.txt', 'utf8', function (err, data) {
+fs.readFile('email1.txt', 'utf8', (err, data) => {
   if (err) {
-    return console.log(err);
+    throw err;
   }
 
-  lines = data.replace(/"/g, '').split('\n');
-  detectBody(lines);
-  treatSubject(lines);
-  treatRecipient(lines);
-  treatSender(lines);
-  detectLink(lines);
+  email = data.split('\n');
+  json.object.email_attributes.email_size = unescape(encodeURIComponent(data)).length;
+  treatRecipient(email);
+  treatSender(email);
+  treatSubject(email);
+  detectBody(email);
+  detectLink(email);
 
-  //console.log(JSON.stringify(json))
-
-  console.log(JSON.stringify(json))
-
-})
+  return json;
+});
 
 
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/json');
+  const j = JSON.stringify(json, null, 2);
+  res.send(j);
+});
 
-
-
-
-
+app.listen(8080);
