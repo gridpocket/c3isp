@@ -1,0 +1,51 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Email Analysis",
+        "description": "API to convert email to JSON Format"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "tags": [
+        {
+            "name": "file"
+        }
+    ],
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/{file}": {
+            "parameters": [
+                {
+                    "name": "file",
+                    "in": "path",
+                    "required": true,
+                    "description": "filename of the email we want to convert",
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "tags": [
+                    "file"
+                ],
+                "summary": "Convert the email to JSON",
+                "responses": {
+                    "200": {
+                        "description": "The email has been converted",
+                        "schema": {
+                            "$ref": "#/definitions/file"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

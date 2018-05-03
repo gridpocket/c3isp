@@ -1,9 +1,11 @@
 const fs = require('fs');
 const cld = require('cld');
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 
 const app = express();
-
+const router = express.Router();
 let email;
 
 let json;
@@ -211,13 +213,15 @@ function createdAt(lines) {
   }
 }
 
-app.get('/:file', (req, res) => {
-  res.setHeader('Content-Type', 'text/json');
+const getJSON = (req, res) => {
+  res.send(req.file);
+};
+
+function convertToJSON(req, res, next, file) {
   new Promise((resolve, reject) => {
-    const { file } = req.params;
     fs.readFile(`${file}.txt`, 'utf8', (err, data) => {
       if (err) {
-        return reject(res.sendStatus(404));
+        return reject(console.log(`${file} file dont exist`));
       }
       json = {
         type: 'schema',
@@ -257,9 +261,26 @@ app.get('/:file', (req, res) => {
       return resolve();
     });
   }).then(() => {
-    const j = JSON.stringify(json, null, 2);
-    res.send(j);
+  //  const j = JSON.stringify(json, null, 2);
+  //  res.send(j);
+    req.file = JSON.stringify(json, null, 2);
+    next();
   });
-});
+}
+
+/* router.get('/:file', (req, res) => {
+  res.setHeader('Content-Type', 'text/json');
+  const { file } = req.params;
+  convertToJSON(res, file);
+}); */
+
+router.route('/:file')
+  .get(getJSON);
+
+router.param('file', convertToJSON);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/v1', router);
 
 app.listen(8080);
+module.exports = app;
