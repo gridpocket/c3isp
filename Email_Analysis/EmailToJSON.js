@@ -214,7 +214,7 @@ function createdAt(lines) {
 }
 
 const getJSON = (req, res) => {
-  res.send(req.file);
+  res.json(req.file);
 };
 
 function convertToJSON(req, res, next, file) {
@@ -261,7 +261,7 @@ function convertToJSON(req, res, next, file) {
       return resolve();
     });
   }).then(() => {
-    req.file = JSON.stringify(json, null, 2);
+    req.file = json;
     next();
   });
 }
