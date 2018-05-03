@@ -219,7 +219,7 @@ const getJSON = (req, res) => {
 
 function convertToJSON(req, res, next, file) {
   new Promise((resolve, reject) => {
-    fs.readFile(`${file}.txt`, 'utf8', (err, data) => {
+    fs.readFile(`./Email/${file}.txt`, 'utf8', (err, data) => {
       if (err) {
         return reject(console.log(`${file} file dont exist`));
       }
@@ -261,18 +261,10 @@ function convertToJSON(req, res, next, file) {
       return resolve();
     });
   }).then(() => {
-  //  const j = JSON.stringify(json, null, 2);
-  //  res.send(j);
     req.file = JSON.stringify(json, null, 2);
     next();
   });
 }
-
-/* router.get('/:file', (req, res) => {
-  res.setHeader('Content-Type', 'text/json');
-  const { file } = req.params;
-  convertToJSON(res, file);
-}); */
 
 router.route('/:file')
   .get(getJSON);
