@@ -5,10 +5,10 @@ First clone the reprository and make sure to node installed in your computer. Th
 
 ### Email to JSON
 If you want to convert an Email to JSON format
-- Add your mail in the Email_Analysis/Email
+- Add your mail in the Email_Analysis/Email directory
 - The file containing your mail must have a .txt extension
 
-Run
+Stay on the c3isp directory and Run :
 
     node Email_Analysis/EmailToJSON.js
 
