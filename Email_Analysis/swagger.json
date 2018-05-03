@@ -43,6 +43,12 @@
                         "schema": {
                             "$ref": "#/definitions/file"
                         }
+                    },
+                    "404": {
+                        "description": "The email doesnt exist in the Email directory",
+                        "schema": {
+                            "$ref": "#/definitions/file"
+                        }
                     }
                 }
             }

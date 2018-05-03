@@ -219,9 +219,9 @@ const getJSON = (req, res) => {
 
 function convertToJSON(req, res, next, file) {
   new Promise((resolve, reject) => {
-    fs.readFile(`./Email/${file}.txt`, 'utf8', (err, data) => {
+    fs.readFile(`Email_Analysis/Email/${file}.txt`, 'utf8', (err, data) => {
       if (err) {
-        return reject(console.log(`${file} file dont exist`));
+        return reject(res.send(404));
       }
       json = {
         type: 'schema',
