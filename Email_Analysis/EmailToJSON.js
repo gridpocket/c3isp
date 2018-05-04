@@ -1,3 +1,14 @@
+/*
+ * File: EmailToJSON.js
+ * File Created: Thursday, 3rd May 2018 5:08:32 pm
+ * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
+ * -----
+ * Last Modified: Friday, 4th May 2018 1:06:10 pm
+ * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
+ * -----
+ * Copyright 2018 GridPocket, GridPocket
+ */
+
 const fs = require('fs');
 const cld = require('cld');
 const express = require('express');
@@ -221,7 +232,7 @@ function convertToJSON(req, res, next, file) {
   new Promise((resolve, reject) => {
     fs.readFile(`Email_Analysis/Email/${file}.txt`, 'utf8', (err, data) => {
       if (err) {
-        return reject(res.send(404));
+        return reject(res.sendStatus(404));
       }
       json = {
         type: 'schema',
