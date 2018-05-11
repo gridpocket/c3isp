@@ -1,17 +1,26 @@
 {
-  "name": "email_analysis",
+  "name": "c3isp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An API for Convertion",
+  "main": "converter.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gridpocket/c3isp.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gridpocket/c3isp/issues"
+  },
+  "homepage": "https://github.com/gridpocket/c3isp#readme",
   "dependencies": {
     "cld": "^2.4.8",
     "express": "^4.16.3",
     "fs": "0.0.1-security",
+    "line-by-line": "^0.1.6",
     "swagger-ui-express": "^3.0.8"
   },
   "devDependencies": {

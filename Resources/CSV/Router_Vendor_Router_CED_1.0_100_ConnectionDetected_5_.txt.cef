@@ -1,0 +1,3 @@
+CEF:0|Resources/CSV/Router_Vendor|Router_CED|1.0|100|ConnectionDetected|5|src=Duration spt=undefined msg=Addr:PortDstIPAddr:Port	Packets	Bytes	Flows end=NaN
+CEF:0|Resources/CSV/Router_Vendor|Router_CED|1.0|100|ConnectionDetected|5|src=UDP spt=undefined msg=1461 end=1505462160000
+CEF:0|Resources/CSV/Router_Vendor|Router_CED|1.0|100|ConnectionDetected|5|src=UDP spt=undefined msg=1801 end=1505462161000

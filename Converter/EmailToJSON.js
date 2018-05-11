@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Friday, 4th May 2018 1:06:10 pm
+ * Last Modified: Friday, 11th May 2018 2:47:20 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -15,7 +15,7 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 
-const app = express();
+// const app = express();
 const router = express.Router();
 let email;
 
@@ -225,12 +225,12 @@ function createdAt(lines) {
 }
 
 const getJSON = (req, res) => {
-  res.json(req.file);
+  res.json(req.emailfile);
 };
 
-function convertToJSON(req, res, next, file) {
+function convertToJSON(req, res, next, emailfile) {
   new Promise((resolve, reject) => {
-    fs.readFile(`Email_Analysis/Email/${file}.txt`, 'utf8', (err, data) => {
+    fs.readFile(`Resources/Email/${emailfile}.txt`, 'utf8', (err, data) => {
       if (err) {
         return reject(res.sendStatus(404));
       }
@@ -272,18 +272,18 @@ function convertToJSON(req, res, next, file) {
       return resolve();
     });
   }).then(() => {
-    req.file = json;
+    req.emailfile = json;
     next();
   });
 }
 
-router.route('/:file')
+router.route('/email/:emailfile')
   .get(getJSON);
 
-router.param('file', convertToJSON);
+router.param('emailfile', convertToJSON);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api/v1', router);
+router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use('/api/v1', router);
 
-app.listen(8080);
-module.exports = app;
+// app.listen(8080);
+module.exports = router;

@@ -1,0 +1,83 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Converter",
+        "description": "API to convert CSV to CEF Format and Email to JSON Format"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/csv/{csvfile}": {
+            "parameters": [
+                {
+                    "name": "csvfile",
+                    "in": "path",
+                    "required": true,
+                    "description": "filename of the input we want to convert into CEF format",
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "tags": [
+                    "csvfile"
+                ],
+                "summary": "Convert CSV to CEF",
+                "responses": {
+                    "200": {
+                        "description": "The CSV file has been converted",
+                        "schema": {
+                            "$ref": "#/definitions/csvfile"
+                        }
+                    },
+                    "404": {
+                        "description": "The CSV file doesnt exist in the Email directory",
+                        "schema": {
+                            "$ref": "#/definitions/csvfile"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/{emailfile}": {
+            "parameters": [
+                {
+                    "name": "emailfile",
+                    "in": "path",
+                    "required": true,
+                    "description": "filename of the email we want to convert",
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "tags": [
+                    "emailfile"
+                ],
+                "summary": "Convert the email to JSON",
+                "responses": {
+                    "200": {
+                        "description": "The email has been converted",
+                        "schema": {
+                            "$ref": "#/definitions/emailfile"
+                        }
+                    },
+                    "404": {
+                        "description": "The email doesnt exist in the Email directory",
+                        "schema": {
+                            "$ref": "#/definitions/emailfile"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

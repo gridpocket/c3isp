@@ -1,22 +1,36 @@
-#CSV to CEF converter
-First clone the reprository and make sure to node installed in your computer. Then in converter folder, use **csvToCef.js** script to convert CSV files given as example into CEF format.
+# Intallation
+First clone the reprository and make sure to node installed in your computer. Go into the folder and run : 
+
+```bash
+npm install
+```
+
 ###To run the script
-- node csvToCef.js
+- node converter.js
 
-### Email to JSON
-If you want to convert an Email to JSON format
-- Add your mail in the Email_Analysis/Email directory
-- The file containing your mail must have a .txt extension
-
-Stay on the c3isp directory and Run :
-
-    node Email_Analysis/EmailToJSON.js
+### How to use the converter
+Once you run the project open your browser :
 
 - Go to  http://localhost:8080/api-docs
 
-- Select GET /{file} and click on "Try it out"
+
+## To use the Email TO JSON converter
+
+- Put your email in the Resources/Email folder, in the .txt format.
+
+- Select GET /email/{emailfile} and click on "Try it out"
 - Enter your email's filename as a parameter but don't add the '.txt' extension !
 - Execute and see the results.
+
+
+## To use the CSV to CEF
+
+- Select GET /csv/{csvfile} and click on "Try it out"
+- Enter either : 'fileNameConnectionDetected' or 'fileNameDomainGeneration'
+- Execute and see the results.
+
+### Results
+
 
 Two type of responses can be sent :
 
