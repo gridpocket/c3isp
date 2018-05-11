@@ -5,7 +5,7 @@ First clone the reprository and make sure to node installed in your computer. Go
 npm install
 ```
 
-###To run the script
+### To run the script
 - node converter.js
 
 ### How to use the converter
