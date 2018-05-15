@@ -48,36 +48,48 @@
                 }
             }
         },
-        "/email/{emailfile}": {
-            "parameters": [
-                {
-                    "name": "emailfile",
-                    "in": "path",
-                    "required": true,
-                    "description": "filename of the email we want to convert",
-                    "type": "string"
-                }
-            ],
-            "get": {
+        "/email": {
+            "post": {
+                "summary": "Convert the email to JSON",
                 "tags": [
                     "emailfile"
                 ],
-                "summary": "Convert the email to JSON",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "emailfile",
+                    "in": "formData",
+                    "required": true,
+                    "description": "file of the email we want to convert",
+                    "type": "file"
+                }
+            ],
                 "responses": {
                     "200": {
-                        "description": "The email has been converted",
-                        "schema": {
-                            "$ref": "#/definitions/emailfile"
-                        }
+                        "description": "The email has been converted"
                     },
                     "404": {
-                        "description": "The email doesnt exist in the Email directory",
-                        "schema": {
-                            "$ref": "#/definitions/emailfile"
-                        }
+                        "description": "The email doesnt exist in the Email directory"
+                    },
+                    "500": {
+                        "description": "An error has occured"
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "emailfile": {
+          "required": [
+            "emailfile"
+          ],
+          "properties": {
+            "emailfile": {
+              "type": "file"
+            }
+          }
         }
     }
 }

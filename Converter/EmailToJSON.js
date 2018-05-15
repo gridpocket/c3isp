@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Friday, 11th May 2018 2:47:20 pm
+ * Last Modified: Tuesday, 15th May 2018 3:55:07 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -12,11 +12,16 @@
 const fs = require('fs');
 const cld = require('cld');
 const express = require('express');
+const crypto = require('crypto');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
+const multer = require('multer');
+
+const upload = multer({ dest: 'uploads/' });
 
 // const app = express();
 const router = express.Router();
+
 let email;
 
 let json;
@@ -224,13 +229,11 @@ function createdAt(lines) {
   }
 }
 
-const getJSON = (req, res) => {
-  res.json(req.emailfile);
-};
 
-function convertToJSON(req, res, next, emailfile) {
+const post = function convertToJSON(req, res) {
   new Promise((resolve, reject) => {
-    fs.readFile(`Resources/Email/${emailfile}.txt`, 'utf8', (err, data) => {
+    const { path } = req.file;
+    fs.readFile(path, 'utf8', (err, data) => {
       if (err) {
         return reject(res.sendStatus(404));
       }
@@ -269,21 +272,51 @@ function convertToJSON(req, res, next, emailfile) {
       detectBody(email);
       detectLink(email);
       createdAt(email);
+      json.id = `schema--${crypto.createHmac('sha1', JSON.stringify(json)).digest('hex')}`;
+      fs.unlinkSync(path);
       return resolve();
     });
   }).then(() => {
-    req.emailfile = json;
-    next();
-  });
-}
+    const json2 = {
+      spec_version: '2.0',
+      type: 'stix-bundle',
+      id: 'stix-bundle--hash',
+      objects: [
+        {
+          type: 'observed-data',
+          id: `observed-data--${crypto.createHmac('sha1', JSON.stringify(json)).digest('hex')}`,
+          created: new Date(),
+          modified: new Date(),
+          first_observed: new Date(),
+          last_observed: new Date(),
+          cybox: {
+            spec_version: '3.0',
+            objects: [
+              {
+                type: 'email',
+                minitems: '1',
+                items: [json],
+              },
+            ],
+          },
+        },
+      ],
+    };
+    json2.id = `stix-bundle--${crypto.createHmac('sha1', JSON.stringify(json2)).digest('hex')}`;
+    req.emailfile = json2;
+    res.json(req.emailfile);
+  })
+    .catch((err) => {
+      console.error('Error during process', err);
+      res.status(500).send(err);
+    });
+};
 
-router.route('/email/:emailfile')
-  .get(getJSON);
+router.route('/email')
+  .post(upload.single('emailfile'), post);
 
-router.param('emailfile', convertToJSON);
 
 router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 router.use('/api/v1', router);
 
-// app.listen(8080);
 module.exports = router;

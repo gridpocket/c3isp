@@ -35,4 +35,4 @@ Once you run the project open your browser :
 Two type of responses can be sent :
 
 - '200' : The email has been converted
-- '404' : The email doesnt exist in the Email directory
+- '404' : The email doesnt exist in the Resources directory
