@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Tuesday, 15th May 2018 3:55:07 pm
+ * Last Modified: Thursday, 17th May 2018 3:13:07 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -19,7 +19,6 @@ const multer = require('multer');
 
 const upload = multer({ dest: 'uploads/' });
 
-// const app = express();
 const router = express.Router();
 
 let email;
@@ -30,26 +29,33 @@ function detectBody(lines) {
   let body = [];
   let size = 0;
   let language;
-  lines.forEach((line) => {
-    if (line.includes('Message-ID: ')) {
-      json.object.email_attributes.email_id = line.replace('Message-ID: ', '').replace('>', '').replace('<', '');
+  new Promise((resolve, reject) => {
+    if (!lines) {
+      return reject(console.log('empty file !'));
     }
-    if (line.includes('<!DOCTYPE html>')) {
-      size = 1;
-    }
-    if (line.includes('</html>')) {
-      size = 0;
-      body.push(line);
-    }
-    if (size === 1) {
-      body.push(line);
-    }
-  });
-  body = body.toString().replace(',', '\n');
-  json.object.email_attributes.body = body;
-  cld.detect(body, (err, result) => {
-    language = result.languages[0].name;
-    json.object.email_attributes.email_language = language.toLowerCase();
+    lines.forEach((line) => {
+      if (line.includes('Message-ID: ')) {
+        json.object.email_attributes.email_id = line.replace('Message-ID: ', '').replace('>', '').replace('<', '');
+      }
+      if (line.includes('<!DOCTYPE html>')) {
+        size = 1;
+      }
+      if (line.includes('</html>')) {
+        size = 0;
+        body.push(line);
+      }
+      if (size === 1) {
+        body.push(line);
+      }
+    });
+    body = body.toString().replace(',', '\n');
+    json.object.email_attributes.body = body;
+    return resolve();
+  }).then(() => {
+    cld.detect(body, (err, result) => {
+      language = result.languages[0].name;
+      json.object.email_attributes.email_language = language.toLowerCase();
+    });
   });
 }
 
@@ -303,8 +309,8 @@ const post = function convertToJSON(req, res) {
       ],
     };
     json2.id = `stix-bundle--${crypto.createHmac('sha1', JSON.stringify(json2)).digest('hex')}`;
-    req.emailfile = json2;
-    res.json(req.emailfile);
+    const finalJSON = json2;
+    res.json(finalJSON);
   })
     .catch((err) => {
       console.error('Error during process', err);
