@@ -7,8 +7,8 @@
 *
 * @File name:  csvToCef.js
 * @Date:   2018-04-25
-* @Last Modified by:   paps
-* @Last Modified time: 2018-05-03
+* @Last Modified by:   rihab ben hamouda
+* @Last Modified time: 2018-05-22
 *
 * @Description: This script enables to convert log files from CSV format to CEF format
 */
@@ -96,7 +96,6 @@ function processFiles(fileName, originalName, cb) {
 }
 
 const post = function convertToJSON(req, res, next) {
-  console.log(req.file);
   let contentToDisplay;
   let stix;
   // const { path } = req.file;
