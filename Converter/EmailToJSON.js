@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Thursday, 17th May 2018 3:13:07 pm
+ * Last Modified: Tuesday, 22nd May 2018 12:09:45 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -18,11 +18,8 @@ const swaggerDocument = require('./swagger.json');
 const multer = require('multer');
 
 const upload = multer({ dest: 'uploads/' });
-
 const router = express.Router();
-
 let email;
-
 let json;
 
 function detectBody(lines) {
@@ -37,7 +34,7 @@ function detectBody(lines) {
       if (line.includes('Message-ID: ')) {
         json.object.email_attributes.email_id = line.replace('Message-ID: ', '').replace('>', '').replace('<', '');
       }
-      if (line.includes('<!DOCTYPE html>')) {
+      if (line.includes('<!DOCTYPE html>') || line.includes('<html>')) {
         size = 1;
       }
       if (line.includes('</html>')) {
