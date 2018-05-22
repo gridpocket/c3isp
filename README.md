@@ -18,15 +18,15 @@ Once you run the project open your browser :
 
 - Put your email in the Resources/Email folder, in the .txt format.
 
-- Select GET /email/{emailfile} and click on "Try it out"
-- Enter your email's filename as a parameter but don't add the '.txt' extension !
+- Select POST /email and click on "Try it out"
+- Select the email file you want to converter in your computer
 - Execute and see the results.
 
 
 ## To use the CSV to CEF
 
-- Select GET /csv/{csvfile} and click on "Try it out"
-- Enter either : 'fileNameConnectionDetected' or 'fileNameDomainGeneration'
+- Select POST /csv and click on "Try it out"
+- Select the csv file you want to converter in your computer
 - Execute and see the results.
 
 ### Results
@@ -34,5 +34,6 @@ Once you run the project open your browser :
 
 Two type of responses can be sent :
 
-- '200' : The email has been converted
-- '404' : The email doesnt exist in the Resources directory
+- '200' : The file has been converted
+- '404' : The file doesnt exist in the Resources directory
+- '500' : An error has occured
