@@ -16,8 +16,6 @@ Once you run the project open your browser :
 
 ## To use the Email TO JSON converter
 
-- Put your email in the Resources/Email folder, in the .txt format.
-
 - Select POST /email and click on "Try it out"
 - Select the email file you want to converter in your computer
 - Execute and see the results.
