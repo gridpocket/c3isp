@@ -18,14 +18,14 @@ const express = require('express');
 const LineByLineReader = require('line-by-line');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
+const multer = require('multer');
+const crypto = require('crypto');
+
+
+const upload = multer({ dest: 'uploads/' });
 
 // const app = express();
 const router = express.Router();
-
-const files = {
-  fileNameConnectionDetected: 'Resources/CSV/Router_Vendor_Router_CED_1.0_100_ConnectionDetected_5_.txt',
-  fileNameDomainGeneration: 'Resources/CSV/DNS_Vendor_DNS_CED_1.0_100_DNSquery_5_.txt',
-};
 
 /* Process file name of the input to get initial content of the converted file
 Input template => Router_Vendor_Router_CED_1.0_100_ConnectionDetected_5_.txt
@@ -48,14 +48,14 @@ query: www.google.com IN A -EDC (192.168.1.9)
 Output template => CEF:0|DNS_Vendor|DNS_CED|1.0|100|DNSquery|5|src=192.168.1.2 spt=37239
 msg=IN A -EDC (192.168.1.9) end=1505484703431
 */
-function processFiles(fileName, cb) {
+function processFiles(fileName, originalName, cb) {
   const lr = new LineByLineReader(fileName);
-  const part1 = produceInitialContentOfCefFile(fileName);
+  const part1 = produceInitialContentOfCefFile(originalName);
 
   fs.unlink(`${fileName}.cef`, (err) => {
     if (err) console.log('No deletion needed as ', `${fileName}.cef`, ' doesn\'t exist.');
 
-    if (fileName.indexOf('DNS')) {
+    if (originalName.indexOf('DNS')) {
       lr.on('line', (l) => {
         const line = l.split(' ');
         let newLine = part1;
@@ -68,11 +68,11 @@ function processFiles(fileName, cb) {
         }
         newLine += ` end=${new Date(`${line[0]}, ${line[1]}`).getTime()}\n`;
 
-        fs.appendFile(`${fileName}.cef`, newLine, (error) => {
+        fs.appendFile(`${originalName}.cef`, newLine, (error) => {
           if (error) throw error;
         });
       });
-    } else if (fileName.indexOf('Router')) {
+    } else if (originalName.indexOf('Router')) {
       lr.on('line', (l) => {
         const line = l.split(' ');
         let newLine = part1;
@@ -83,27 +83,26 @@ function processFiles(fileName, cb) {
         newLine += ` proto=${line[3]}`;
         newLine += ` end=${new Date(line[0]).getTime()}\n`;
 
-        fs.appendFile(`${fileName}.cef`, newLine, (error) => {
+        fs.appendFile(`${originalName}.cef`, newLine, (error) => {
           if (error) throw error;
         });
       });
     }
 
     lr.on('end', () => {
-      cb(`${fileName}.cef`);
+      cb(`${originalName}.cef`);
     });
   });
 }
 
-const getConvertion = (req, res) => {
-  res.send(req.csvfile);
-};
-
-function convertToJSON(req, res, next) {
+const post = function convertToJSON(req, res, next) {
+  console.log(req.file);
   let contentToDisplay;
+  let stix;
+  // const { path } = req.file;
   new Promise((resolve, reject) => {
     if (req.originalUrl !== '/favicon.ico') {
-      processFiles(files[req.params.csvfile], (path) => {
+      processFiles(req.file.path, req.file.originalname, (path) => {
         fs.readFile(path, 'utf8', (err, data) => {
           if (err) {
             return reject(res.sendStatus(404));
@@ -114,15 +113,41 @@ function convertToJSON(req, res, next) {
       });
     }
   }).then(() => {
-    req.csvfile = contentToDisplay;
+    stix = {
+      spec_version: '2.0',
+      type: 'stix-bundle',
+      id: 'stix-bundle--hash',
+      objects: [
+        {
+          type: 'observed-data',
+          id: `observed-data--${crypto.createHmac('sha1', JSON.stringify(contentToDisplay)).digest('hex')}`,
+          created: new Date(),
+          modified: new Date(),
+          first_observed: new Date(),
+          last_observed: new Date(),
+          cybox: {
+            spec_version: '3.0',
+            objects: [
+              {
+                type: 'array',
+                minitems: '1',
+                items: [contentToDisplay],
+              },
+            ],
+          },
+        },
+      ],
+    };
+  }).then(() => {
+    stix.id = `stix-bundle--${crypto.createHmac('sha1', JSON.stringify(stix)).digest('hex')}`;
+    res.send(stix);
     next();
   });
-}
+};
 
-router.route('/csv/:csvfile')
-  .get(getConvertion);
+router.route('/csv/')
+  .post(upload.single('csvfile'), post);
 
-router.param('csvfile', convertToJSON);
 
 router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 router.use('/api/v1', router);

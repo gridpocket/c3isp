@@ -17,33 +17,33 @@
         "application/json"
     ],
     "paths": {
-        "/csv/{csvfile}": {
-            "parameters": [
-                {
-                    "name": "csvfile",
-                    "in": "path",
-                    "required": true,
-                    "description": "filename of the input we want to convert into CEF format",
-                    "type": "string"
-                }
-            ],
-            "get": {
+        "/csv": {
+            "post": {
+                "summary": "Convert the CSV to CEF",
                 "tags": [
                     "csvfile"
                 ],
-                "summary": "Convert CSV to CEF",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "csvfile",
+                    "in": "formData",
+                    "required": true,
+                    "description": "csv file we want to convert",
+                    "type": "file"
+                }
+            ],
                 "responses": {
                     "200": {
-                        "description": "The CSV file has been converted",
-                        "schema": {
-                            "$ref": "#/definitions/csvfile"
-                        }
+                        "description": "The csv has been converted"
                     },
                     "404": {
-                        "description": "The CSV file doesnt exist in the Email directory",
-                        "schema": {
-                            "$ref": "#/definitions/csvfile"
-                        }
+                        "description": "The csv doesnt exist in the Email directory"
+                    },
+                    "500": {
+                        "description": "An error has occured"
                     }
                 }
             }
