@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Tuesday, 22nd May 2018 12:09:45 pm
+ * Last Modified: Tuesday, 22nd May 2018 3:08:51 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -56,6 +56,33 @@ function detectBody(lines) {
   });
 }
 
+function attachment(lines) {
+  const safe = ['.au', '.avi', '.bmp', '.cdr', '.drw', '.dwg', '.dxf', '.eps', '.gif', '.ico', '.img', '.jpeg', '.jpg', '.log', '.mdb', '.mde', '.mid', '.midi', '.mov', '.movie', '.mp1', '.mp2', '.mp3', '.mpeg', '.mpg', '.msg', '.nws', '.obd', '.pcx', '.pdd', '.pdf', '.pic', '.pps', '.pub', '.qbb', '.qbw', '.qdb', '.ra', '.snd', '.text', '.tga', '.tif', '.tsv', '.txt', '.wav', '.wma', '.wmf', '.wri'];
+  const caution = ['.alx', '.asp', '.cab', '.cda', '.chf', '.cur', '.dic', '.doc', '.dot', '.fav', '.grp', '.gtar', '.gwf', '.gz', '.hlp', '.ht', '.htm', '.html', '.inf', '.ini', '.iso', '.ldb', '.lnk', '.mdw', '.msi', '.msp', '.oft', '.pbk', '.pcl', '.pot', '.ppt', '.shtml', '.sys', '.tar', '.tgz', '.ttf', '.url', '.uu', '.vir', '.wb2', '.wbk', '.wiz', '.wk4', '.wks', '.wpd', '.xlk', '.xls', '.xlt', '.xml', '.z', '.zip'];
+  const dangerous = ['.bas', '.bat', '.bin', '.c', '.cmd', '.com', '.cpl', '.dll', '.eml', '.exe', '.java', '.js', '.jse', '.pif', '.pl', '.reg', '.scr', '.sct', '.vbe', '.vbs', '.wsc', '.wsf', '.wsh'];
+  lines.forEach((line) => {
+    if (line.startsWith('Content-Disposition: attachment;')) {
+      const l = line.split('.');
+      const extension = `.${l[l.length - 1].replace('"', '').replace('\r', '')}`;
+      json.object.email_attributes.attachment.attachment_format = extension;
+      safe.forEach((e) => {
+        if (e === extension) {
+          json.object.email_attributes.attachment.safety_rating = 'safe';
+        }
+      });
+      caution.forEach((e) => {
+        if (e === extension) {
+          json.object.email_attributes.attachment.safety_rating = 'caution';
+        }
+      });
+      dangerous.forEach((e) => {
+        if (e === extension) {
+          json.object.email_attributes.attachment.safety_rating = 'dangerous';
+        }
+      });
+    }
+  });
+}
 
 function treatSubject(lines) {
   const BreakException = {};
@@ -87,19 +114,27 @@ function treatRecipient(lines) {
   const BreakException = {};
   try {
     lines.forEach((line) => {
-      if (line.startsWith('Delivered-To: ')) {
-        const nbrRecipient = line.replace('Delivered-To: ', '').split(' ').length;
+      if (line.startsWith('To: ')) {
+        const mails = line.replace('To: ', '').split(' ');
+        const emails = [];
+        mails.forEach((e) => {
+          if (e.includes('>')) {
+            emails.push(e.replace('>', '').replace('<', ''));
+          }
+        });
+        json.object.email_attributes.recipient_data.items.recipient.address = emails;
+        const nbrRecipient = emails.length;
         json.object.email_attributes.recipient_data.recipient_number = nbrRecipient;
         if (nbrRecipient > 1) {
           json.object.email_attributes.recipient_data.items.recipient.type = 'organisation';
         } else {
           json.object.email_attributes.recipient_data.items.recipient.type = 'individual';
         }
-        const emails = line.replace('Delivered-To: ', '').split(' ');
-        json.object.email_attributes.recipient_data.items.recipient.address = emails;
         const names = [];
-        emails.forEach((e) => {
-          names.push(e.split('@')[0]);
+        mails.forEach((e) => {
+          if (!e.includes('@')) {
+            names.push(e);
+          }
         });
         json.object.email_attributes.recipient_data.items.recipient.name = names;
       }
@@ -261,6 +296,8 @@ const post = function convertToJSON(req, res) {
             },
             sender: {
             },
+            attachment: {
+            },
           },
           link: {},
         },
@@ -275,6 +312,7 @@ const post = function convertToJSON(req, res) {
       detectBody(email);
       detectLink(email);
       createdAt(email);
+      attachment(email);
       json.id = `schema--${crypto.createHmac('sha1', JSON.stringify(json)).digest('hex')}`;
       fs.unlinkSync(path);
       return resolve();

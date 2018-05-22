@@ -90,6 +90,16 @@
               "type": "file"
             }
           }
-        }
+        },
+        "csvfile": {
+            "required": [
+              "csvfile"
+            ],
+            "properties": {
+              "csvfile": {
+                "type": "file"
+              }
+            }
+          }
     }
 }
