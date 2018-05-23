@@ -3,7 +3,7 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Tuesday, 22nd May 2018 3:08:51 pm
+ * Last Modified: Wednesday, 23rd May 2018 11:45:41 am
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
@@ -109,6 +109,9 @@ function treatSubject(lines) {
   }
 }
 
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
 
 function treatRecipient(lines) {
   const BreakException = {};
@@ -122,6 +125,13 @@ function treatRecipient(lines) {
             emails.push(e.replace('>', '').replace('<', ''));
           }
         });
+        if (emails.length < 1) {
+          mails.forEach((e) => {
+            if (e.includes('@')) {
+              emails.push(e);
+            }
+          });
+        }
         json.object.email_attributes.recipient_data.items.recipient.address = emails;
         const nbrRecipient = emails.length;
         json.object.email_attributes.recipient_data.recipient_number = nbrRecipient;
@@ -136,7 +146,13 @@ function treatRecipient(lines) {
             names.push(e);
           }
         });
-        json.object.email_attributes.recipient_data.items.recipient.name = names;
+        if (names.length < 1) {
+          mails.forEach((e) => {
+            names.push(e.split('@')[0].replace('<', ''));
+          });
+        }
+        const uniqueName = names.filter(onlyUnique);
+        json.object.email_attributes.recipient_data.items.recipient.name = uniqueName;
       }
       if (line.startsWith('To: ')) {
         json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'To';
@@ -167,29 +183,31 @@ function treatRecipient(lines) {
 
 
 function treatSender(lines) {
-  const BreakException = {};
-  try {
-    lines.forEach((line) => {
-      if (line.includes('From: ')) {
-        const sender = line.replace('From: ', '').replace(/'/g, ' ').split('<');
-        sender.forEach((s) => {
-          if (s.includes('@')) {
-            json.object.email_attributes.sender.address = s.replace('>', '').replace('"', '');
-            sender.pop(s);
-            json.object.email_attributes.sender.name = sender[0].replace(/"/g, '');
-          }
-        });
-      }
+  lines.forEach((line) => {
+    if (line.includes('From: ')) {
+      const sender = line.replace('From: ', '').replace(/'/g, ' ').split('<');
+      sender.forEach((s) => {
+        if (s.includes('@')) {
+          json.object.email_attributes.sender.address = s.replace('>', '').replace('"', '');
+          sender.pop(s);
+          json.object.email_attributes.sender.name = sender[0].replace(/"/g, '');
+        }
+      });
+    }
+    const BreakException = {};
+    try {
       if (line.includes('Received: from ')) {
         const ipLine = line.split(' ');
         const ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '');
-        json.object.email_attributes.sender.ip = ip;
+        if (!Number.isNaN(Number(ip[ip.length - 1]))) {
+          json.object.email_attributes.sender.ip = ip;
+        }
         throw BreakException;
       }
-    });
-  } catch (e) {
-    if (e !== BreakException) throw e;
-  }
+    } catch (e) {
+      if (e !== BreakException) throw e;
+    }
+  });
 }
 
 function detectLink(lines) {
@@ -211,6 +229,19 @@ function detectLink(lines) {
               url = url.slice(0, -1);
             }
             urls.push(url);
+            let i = 0;
+            url.split('/')[2].split('.').forEach((e) => {
+              if (!Number.isNaN(Number(e))) {
+                i += 1;
+              }
+            });
+            if (i === 4) {
+              if (json.object.link.link_ip) {
+                json.object.link.link_ip += 1;
+              } else {
+                json.object.link.link_ip = 1;
+              }
+            }
           }
         }
       });
@@ -255,7 +286,7 @@ function createdAt(lines) {
   const BreakException = {};
   try {
     lines.forEach((line) => {
-      if (line.startsWith('Received: ') && line.endsWith('0000')) {
+      if (line.startsWith('Received: ') && line.endsWith('0')) {
         const sep = line.split(';');
         const dateToStr = Date.parse(`${sep[1].replace('-0000', '')} GMT`);
         json.object.email_attributes.created = new Date(dateToStr);
