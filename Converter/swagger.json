@@ -78,6 +78,37 @@
                     }
                 }
             }
+        },
+        "/stix": {
+            "post": {
+                "summary": "Remove the stix from the response",
+                "tags": [
+                    "stix"
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "stix",
+                    "in": "formData",
+                    "required": true,
+                    "description": "JSON file with the stix we want to remove",
+                    "type": "file"
+                }
+            ],
+                "responses": {
+                    "200": {
+                        "description": "The stix has been removed"
+                    },
+                    "404": {
+                        "description": "The file don't exist"
+                    },
+                    "500": {
+                        "description": "An error has occured"
+                    }
+                }
+            }
         }
     },
     "definitions": {

@@ -3,11 +3,14 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Wednesday, 23rd May 2018 11:45:41 am
+ * Last Modified: Thursday, 31st May 2018 12:01:45 pm
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
  */
+
+//use some and every instead of exception
+
 
 const fs = require('fs');
 const cld = require('cld');
@@ -24,7 +27,7 @@ let json;
 
 function detectBody(lines) {
   let body = [];
-  let size = 0;
+  let inbody = 0;
   let language;
   new Promise((resolve, reject) => {
     if (!lines) {
@@ -35,13 +38,13 @@ function detectBody(lines) {
         json.object.email_attributes.email_id = line.replace('Message-ID: ', '').replace('>', '').replace('<', '');
       }
       if (line.includes('<!DOCTYPE html>') || line.includes('<html>')) {
-        size = 1;
+        inbody = 1;
       }
       if (line.includes('</html>')) {
-        size = 0;
+        inbody = 0;
         body.push(line);
       }
-      if (size === 1) {
+      if (inbody === 1) {
         body.push(line);
       }
     });
