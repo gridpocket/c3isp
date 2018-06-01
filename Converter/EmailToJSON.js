@@ -3,14 +3,11 @@
  * File Created: Thursday, 3rd May 2018 5:08:32 pm
  * Author: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
- * Last Modified: Thursday, 31st May 2018 12:01:45 pm
+ * Last Modified: Friday, 1st June 2018 10:46:37 am
  * Modified By: Rihab Ben Hamouda (rihab.benh@gripdocket.com)
  * -----
  * Copyright 2018 GridPocket, GridPocket
  */
-
-//use some and every instead of exception
-
 
 const fs = require('fs');
 const cld = require('cld');
@@ -88,28 +85,23 @@ function attachment(lines) {
 }
 
 function treatSubject(lines) {
-  const BreakException = {};
-  try {
-    lines.forEach((line) => {
-      if (line.startsWith('Subject: ')) {
-        json.object.email_attributes.subject.type = line.replace('Subject: ', '');
+  lines.some((line) => {
+    if (line.startsWith('Subject: ')) {
+      json.object.email_attributes.subject.type = line.replace('Subject: ', '');
+      json.object.email_attributes.subject.format = 'text';
+      json.object.email_attributes.subject.characters = line.replace('Subject: ', '').length;
+      cld.detect(line, (err, result) => {
+        const language = result.languages[0].name;
+        json.object.email_attributes.subject.language = language.toLowerCase();
+      });
+      if (Number.isNaN(line.replace('Subject: ', ''))) {
+        json.object.email_attributes.subject.format = 'number';
+      } else {
         json.object.email_attributes.subject.format = 'text';
-        json.object.email_attributes.subject.characters = line.replace('Subject: ', '').length;
-        cld.detect(line, (err, result) => {
-          const language = result.languages[0].name;
-          json.object.email_attributes.subject.language = language.toLowerCase();
-        });
-        if (Number.isNaN(line.replace('Subject: ', ''))) {
-          json.object.email_attributes.subject.format = 'number';
-        } else {
-          json.object.email_attributes.subject.format = 'text';
-        }
-        throw BreakException;
       }
-    });
-  } catch (e) {
-    if (e !== BreakException) throw e;
-  }
+    }
+    return (json.object.email_attributes.subject.format);
+  });
 }
 
 function onlyUnique(value, index, self) {
@@ -117,76 +109,64 @@ function onlyUnique(value, index, self) {
 }
 
 function treatRecipient(lines) {
-  const BreakException = {};
-  try {
-    lines.forEach((line) => {
-      if (line.startsWith('To: ')) {
-        const mails = line.replace('To: ', '').split(' ');
-        const emails = [];
+  lines.some((line) => {
+    if (line.startsWith('To: ')) {
+      const mails = line.replace('To: ', '').split(' ');
+      const emails = [];
+      mails.forEach((e) => {
+        if (e.includes('>')) {
+          emails.push(e.replace('>', '').replace('<', ''));
+        }
+      });
+      if (emails.length < 1) {
         mails.forEach((e) => {
-          if (e.includes('>')) {
-            emails.push(e.replace('>', '').replace('<', ''));
+          if (e.includes('@')) {
+            emails.push(e);
           }
         });
-        if (emails.length < 1) {
-          mails.forEach((e) => {
-            if (e.includes('@')) {
-              emails.push(e);
-            }
-          });
+      }
+      json.object.email_attributes.recipient_data.items.recipient.address = emails;
+      const nbrRecipient = emails.length;
+      json.object.email_attributes.recipient_data.recipient_number = nbrRecipient;
+      if (nbrRecipient > 1) {
+        json.object.email_attributes.recipient_data.items.recipient.type = 'organisation';
+      } else {
+        json.object.email_attributes.recipient_data.items.recipient.type = 'individual';
+      }
+      const names = [];
+      mails.forEach((e) => {
+        if (!e.includes('@')) {
+          names.push(e);
         }
-        json.object.email_attributes.recipient_data.items.recipient.address = emails;
-        const nbrRecipient = emails.length;
-        json.object.email_attributes.recipient_data.recipient_number = nbrRecipient;
-        if (nbrRecipient > 1) {
-          json.object.email_attributes.recipient_data.items.recipient.type = 'organisation';
-        } else {
-          json.object.email_attributes.recipient_data.items.recipient.type = 'individual';
-        }
-        const names = [];
+      });
+      if (names.length < 1) {
         mails.forEach((e) => {
-          if (!e.includes('@')) {
-            names.push(e);
-          }
+          names.push(e.split('@')[0].replace('<', ''));
         });
-        if (names.length < 1) {
-          mails.forEach((e) => {
-            names.push(e.split('@')[0].replace('<', ''));
-          });
-        }
-        const uniqueName = names.filter(onlyUnique);
-        json.object.email_attributes.recipient_data.items.recipient.name = uniqueName;
       }
-      if (line.startsWith('To: ')) {
-        json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'To';
-        throw BreakException;
-      }
-      if (line.startsWith('Cc: ')) {
-        json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Cc';
-        throw BreakException;
-      }
-      if (line.startsWith('Bcc: ')) {
-        json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Bcc';
-        throw BreakException;
-      }
-    });
-  } catch (e) {
-    if (e !== BreakException) throw e;
-  }
-  try {
-    if (lines[3].includes('by')) {
-      const ipLine = lines[3].split(' ');
-      json.object.email_attributes.recipient_data.items.recipient.ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '').replace('(', '');
-      throw BreakException;
+      const uniqueName = names.filter(onlyUnique);
+      json.object.email_attributes.recipient_data.items.recipient.name = uniqueName;
     }
-  } catch (e) {
-    if (e !== BreakException) throw e;
+    if (line.startsWith('To: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'To';
+    }
+    if (line.startsWith('Cc: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Cc';
+    }
+    if (line.startsWith('Bcc: ')) {
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category = 'Bcc';
+    }
+    return (json.object.email_attributes.recipient_data.items.recipient.ip &&
+      json.object.email_attributes.recipient_data.items.recipient.recipient_category);
+  });
+  if (lines[3].includes('by') || lines[3].includes('Received')) {
+    const ipLine = lines[3].split(' ');
+    json.object.email_attributes.recipient_data.items.recipient.ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '').replace('(', '');
   }
 }
 
-
 function treatSender(lines) {
-  lines.forEach((line) => {
+  lines.some((line) => {
     if (line.includes('From: ')) {
       const sender = line.replace('From: ', '').replace(/'/g, ' ').split('<');
       sender.forEach((s) => {
@@ -197,19 +177,14 @@ function treatSender(lines) {
         }
       });
     }
-    const BreakException = {};
-    try {
-      if (line.includes('Received: from ')) {
-        const ipLine = line.split(' ');
-        const ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '');
-        if (!Number.isNaN(Number(ip[ip.length - 1]))) {
-          json.object.email_attributes.sender.ip = ip;
-        }
-        throw BreakException;
+    if (line.includes('Received: from ')) {
+      const ipLine = line.split(' ');
+      const ip = ipLine[ipLine.length - 1].replace('[', '').replace(']', '').replace(')', '');
+      if (!Number.isNaN(Number(ip[ip.length - 1]))) {
+        json.object.email_attributes.sender.ip = ip;
       }
-    } catch (e) {
-      if (e !== BreakException) throw e;
     }
+    return (json.object.email_attributes.sender.ip && json.object.email_attributes.sender.name);
   });
 }
 
@@ -266,41 +241,28 @@ function detectLink(lines) {
 
 
 function emailFormat(lines) {
-  const BreakException = {};
-  try {
-    lines.forEach((line) => {
-      if (line.includes('Content-Type: multipart/alternative')) {
-        json.object.email_attributes.email_format = 'mixed';
-        throw BreakException;
-      } else if (line.includes('Content-Type: text/plain')) {
-        json.object.email_attributes.email_format = 'plain-text';
-        throw BreakException;
-      } else if (line.includes('Content-Type: text/html')) {
-        json.object.email_attributes.email_format = 'HTML';
-        throw BreakException;
-      }
-    });
-  } catch (e) {
-    if (e !== BreakException) throw e;
-  }
+  lines.some((line) => {
+    if (line.includes('Content-Type: multipart/alternative')) {
+      json.object.email_attributes.email_format = 'mixed';
+    } else if (line.includes('Content-Type: text/plain')) {
+      json.object.email_attributes.email_format = 'plain-text';
+    } else if (line.includes('Content-Type: text/html')) {
+      json.object.email_attributes.email_format = 'HTML';
+    }
+    return (json.object.email_attributes.email_format);
+  });
 }
 
 function createdAt(lines) {
-  const BreakException = {};
-  try {
-    lines.forEach((line) => {
-      if (line.startsWith('Received: ') && line.endsWith('0')) {
-        const sep = line.split(';');
-        const dateToStr = Date.parse(`${sep[1].replace('-0000', '')} GMT`);
-        json.object.email_attributes.created = new Date(dateToStr);
-        throw BreakException;
-      }
-    });
-  } catch (e) {
-    if (e !== BreakException) throw e;
-  }
+  lines.some((line) => {
+    if (line.startsWith('Received: ') && line.endsWith('0')) {
+      const sep = line.split(';');
+      const dateToStr = Date.parse(`${sep[1].replace('-0000', '')} GMT`);
+      json.object.email_attributes.created = new Date(dateToStr);
+    }
+    return (json.object.email_attributes.created);
+  });
 }
-
 
 const post = function convertToJSON(req, res) {
   new Promise((resolve, reject) => {
