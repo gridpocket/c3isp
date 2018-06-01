@@ -27,6 +27,13 @@ Once you run the project open your browser :
 - Select the csv file you want to converter in your computer
 - Execute and see the results.
 
+## Remove
+
+- Select POST /stix and click on "Try it out"
+- Select the JSON file you want to converter in your computer
+- It can be either the conversion of an email or a csv.
+- Execute and see the results.
+
 ### Results
 
 

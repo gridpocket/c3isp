@@ -131,6 +131,16 @@
                 "type": "file"
               }
             }
-          }
+        },
+          "stix": {
+            "required": [
+              "stix"
+            ],
+            "properties": {
+              "stix": {
+                "type": "file"
+              }
+            }
+        }
     }
 }
