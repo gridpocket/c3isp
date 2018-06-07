@@ -7,8 +7,8 @@
 *
 * @File name:  csvToCef.js
 * @Date:   2018-04-25
-* @Last Modified by:   rihab ben hamouda
-* @Last Modified time: 2018-05-22
+* @Last Modified by:   paps
+* @Last Modified time: 2018-06-07
 *
 * @Description: This script enables to convert log files from CSV format to CEF format
 */
@@ -53,9 +53,10 @@ function processFiles(fileName, originalName, cb) {
   const part1 = produceInitialContentOfCefFile(originalName);
 
   fs.unlink(`${fileName}.cef`, (err) => {
-    if (err) console.log('No deletion needed as ', `${fileName}.cef`, ' doesn\'t exist.');
+    // if (err) console.log('No deletion needed as ', `${fileName}.cef`, ' doesn\'t exist.');
+    if (err) ;
 
-    if (originalName.indexOf('DNS')) {
+    if (originalName.indexOf('DNS') !== -1) {
       lr.on('line', (l) => {
         const line = l.split(' ');
         let newLine = part1;
@@ -66,14 +67,17 @@ function processFiles(fileName, originalName, cb) {
         for (let i = 8; i < line.length; i += 1) {
           newLine += `${line[i]}`;
         }
-        newLine += ` end=${new Date(`${line[0]}, ${line[1]}`).getTime()}\n`;
+        newLine += ` end=${new Date(`${line[0]}, ${line[1]}`).getTime()}`;
+        newLine += ' dtz=Europe/Berlin \n';
 
         fs.appendFile(`${originalName}.cef`, newLine, (error) => {
           if (error) throw error;
         });
       });
-    } else if (originalName.indexOf('Router')) {
+    } else if (originalName.indexOf('Router') !== -1) {
+      let index = 0;
       lr.on('line', (l) => {
+        index = index + 1;
         const line = l.split(' ');
         let newLine = part1;
         newLine += `src=${line[4].split(':')[0]}`;
@@ -81,11 +85,14 @@ function processFiles(fileName, originalName, cb) {
         newLine += ` dst=${line[6].split(':')[0]}`;
         newLine += ` dpt=${line[6].split(':')[1]}`;
         newLine += ` proto=${line[3]}`;
-        newLine += ` end=${new Date(line[0]).getTime()}\n`;
-
-        fs.appendFile(`${originalName}.cef`, newLine, (error) => {
-          if (error) throw error;
-        });
+        newLine += ` end=${new Date(line[0]).getTime()}`;
+        newLine += ' dtz=Europe/Berlin \n';
+        
+        if(index > 1){
+          fs.appendFile(`${originalName}.cef`, newLine, (error) => {
+            if (error) throw error;
+          });
+        }
       });
     }
 
@@ -107,7 +114,11 @@ const post = function convertToJSON(req, res, next) {
             return reject(res.sendStatus(404));
           }
           contentToDisplay = data;
+
           return resolve();
+        });
+        fs.unlink(path, (err) => {
+          if(err) return err;
         });
       });
     }
