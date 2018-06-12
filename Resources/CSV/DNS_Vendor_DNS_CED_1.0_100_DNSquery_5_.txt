@@ -1,0 +1,2 @@
+15-Sep-2017 16:11:43.431 client 192.168.1.2#37239 (www.google.com): query: www.google.com IN A -EDC (192.168.1.9) 
+15-Sep-2017 16:11:44.474 client 192.168.1.3#57203 (www.rai.it): query: www.rai.it IN A + (192.168.1.9)

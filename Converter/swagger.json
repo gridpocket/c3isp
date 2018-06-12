@@ -1,0 +1,146 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Converter",
+        "description": "API to convert CSV to CEF Format and Email to JSON Format"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/csv": {
+            "post": {
+                "summary": "Convert the CSV to CEF",
+                "tags": [
+                    "csvfile"
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "csvfile",
+                    "in": "formData",
+                    "required": true,
+                    "description": "csv file we want to convert",
+                    "type": "file"
+                }
+            ],
+                "responses": {
+                    "200": {
+                        "description": "The csv has been converted"
+                    },
+                    "404": {
+                        "description": "The csv doesnt exist in the Email directory"
+                    },
+                    "500": {
+                        "description": "An error has occured"
+                    }
+                }
+            }
+        },
+        "/email": {
+            "post": {
+                "summary": "Convert the email to JSON",
+                "tags": [
+                    "emailfile"
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "emailfile",
+                    "in": "formData",
+                    "required": true,
+                    "description": "file of the email we want to convert",
+                    "type": "file"
+                }
+            ],
+                "responses": {
+                    "200": {
+                        "description": "The email has been converted"
+                    },
+                    "404": {
+                        "description": "The email doesnt exist in the Email directory"
+                    },
+                    "500": {
+                        "description": "An error has occured"
+                    }
+                }
+            }
+        },
+        "/stix": {
+            "post": {
+                "summary": "Remove the stix from the response",
+                "tags": [
+                    "stix"
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+            "parameters": [
+                {
+                    "name": "stix",
+                    "in": "formData",
+                    "required": true,
+                    "description": "JSON file with the stix we want to remove",
+                    "type": "file"
+                }
+            ],
+                "responses": {
+                    "200": {
+                        "description": "The stix has been removed"
+                    },
+                    "404": {
+                        "description": "The file don't exist"
+                    },
+                    "500": {
+                        "description": "An error has occured"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "emailfile": {
+          "required": [
+            "emailfile"
+          ],
+          "properties": {
+            "emailfile": {
+              "type": "file"
+            }
+          }
+        },
+        "csvfile": {
+            "required": [
+              "csvfile"
+            ],
+            "properties": {
+              "csvfile": {
+                "type": "file"
+              }
+            }
+        },
+          "stix": {
+            "required": [
+              "stix"
+            ],
+            "properties": {
+              "stix": {
+                "type": "file"
+              }
+            }
+        }
+    }
+}
