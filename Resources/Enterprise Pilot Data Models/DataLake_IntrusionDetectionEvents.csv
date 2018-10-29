@@ -1,0 +1,18 @@
+category,dest_ip,dest_port,signature_name,src_ip,timestamp,severity,vendor_name,vendor_product,product_version,signature_id
+Attempted Information Leak,172.16.112.100,80,WEB-CGI perl.exe command attempt,206.48.44.18,2017-03-08T14:01:13Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1648
+Attempted Information Leak,172.16.112.100,80,WEB-CGI perl.exe access,206.48.44.18,2017-03-08T14:01:13Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1062
+Attempted Information Leak,172.16.112.100,80,WEB-CGI perl.exe command attempt,206.48.44.18,2017-03-08T14:01:13Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1648
+Attempted Information Leak,172.16.112.100,80,WEB-CGI perl.exe access,206.48.44.18,2017-03-08T14:01:13Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1062
+Attempted Information Leak,172.16.112.100,139,NETBIOS NT NULL session,206.48.44.18,2017-03-08T14:16:13Z,medium,Cisco and/or its affiliates,Snort,2.9.0,530
+Attempted Information Leak,172.16.112.100,80,WEB-CGI finger access,135.8.60.182,2017-03-08T15:09:42Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.114.50,80,WEB-MISC backup access,197.182.91.233,2017-03-08T15:26:58Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1213
+Attempted Information Leak,172.16.114.50,80,WEB-CGI finger access,195.73.151.50,2017-03-08T15:58:38Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.112.100,80,WEB-CGI finger access,135.13.216.191,2017-03-08T17:45:40Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.114.50,80,WEB-MISC backup access,195.115.218.108,2017-03-08T20:02:07Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1213
+Attempted Information Leak,172.16.112.100,80,WEB-CGI finger access,135.8.60.182,2017-03-08T22:08:14Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.112.149,17892,WEB-MISC cookiejacking attempt,140.140.138.108,2017-03-08T22:37:50Z,medium,Cisco and/or its affiliates,Snort,2.9.0,19177
+Attempted Information Leak,172.16.114.168,10317,WEB-MISC cookiejacking attempt,209.107.25.151,2017-03-08T23:00:31Z,medium,Cisco and/or its affiliates,Snort,2.9.0,19177
+Attempted Information Leak,172.16.114.50,80,WEB-CGI finger access,194.27.251.21,2017-03-08T23:05:39Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.112.100,80,WEB-CGI finger access,135.8.60.182,2017-03-08T23:42:10Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839
+Attempted Information Leak,172.16.112.100,80,WEB-MISC backup access,135.8.60.182,2017-03-08T23:44:11Z,medium,Cisco and/or its affiliates,Snort,2.9.0,1213
+Attempted Information Leak,172.16.114.50,80,WEB-CGI finger access,135.13.216.191,2017-03-09T00:08:35Z,medium,Cisco and/or its affiliates,Snort,2.9.0,839

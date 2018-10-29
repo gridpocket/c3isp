@@ -1,0 +1,84 @@
+{
+  "spec_version": "2.0",
+  "type": "stix-bundle",
+  "id": "stix-bundle--7f441a36e04d26899cdacdb51efd803da9d33bb4",
+  "objects": [
+    {
+      "type": "observed-data",
+      "id": "observed-data--61d47b98589910fc0483dfd1465f5ca172143075",
+      "created": "2018-08-02T13:47:05.352Z",
+      "modified": "2018-08-02T13:47:05.352Z",
+      "first_observed": "2018-08-02T13:47:05.352Z",
+      "last_observed": "2018-08-02T13:47:05.352Z",
+      "cybox": {
+        "spec_version": "3.0",
+        "objects": [
+          {
+            "items": [
+              {
+                "Report": {
+                  "Summary": " This document reports on the results of an automatic security scan., The report first summarises the results found. Then, for each host,, the report describes every issue found. Please consider the, advice given in each description, in order to rectify the issue., ,, Vendor security updates are not trusted., ,, Overrides are on. When a result has an override, this report uses the threat of the override., ,, Information on overrides is included in the report., ,, Notes are included in the report., ,, This report might not show details of all issues that were found., , It only lists hosts that produced issues., , Issues with the threat level \"Log\" are not shown., , Issues with the threat level \"Debug\" are not shown., , Issues with the threat level \"False Positive\" are not shown., Only results with a minimum QoD of 70 are shown. ,This report contains all 2 results selected by the filtering described above. Before filtering there were 33 results. ,All dates are displayed using the timezone \"Europe/Rome\", which is abbreviated \"CEST\". ",
+                  "Scan started": "Wed Jun 6 10:17:11 2018 CEST",
+                  "Scan ended": "Wed Jun 6 10:23:15 2018 CEST",
+                  "Task": "scan_2018-06-06_10:12:59",
+                  "Host Summary": {
+                    "Host": "192.12.193.86 (pc-sideri.nic.it)",
+                    "Start": "Jun 6, 10:17:30",
+                    "end": "Jun 6, 10:23:15",
+                    "High": "0",
+                    "Medium": "1",
+                    "Low": "1",
+                    "Log": "0",
+                    "False Positive": "0"
+                  },
+                  "Host Authentifications": {
+                    "Host": "192.12.193.86 (pc-sideri.nic.it)",
+                    "Protocole": "SMB",
+                    "Resulte": "Success",
+                    "Port User": "Protocol SMB, Port 445, User "
+                  },
+                  "Results for Host": {
+                    "Host": "192.12.193.86 (pc-sideri.nic.it)",
+                    "Scanning_Started_at": "Wed Jun 6 10:17:11 2018 CEST",
+                    "Number_of_results": 2,
+                    "Port Summary #1": {
+                      "Service Port": "80/tcp",
+                      "Threat Level": "Medium"
+                    },
+                    "Port Summary #2": {
+                      "Service Port": "general/tcp",
+                      "Threat Level": "Low"
+                    },
+                    "Security Issues 1": {
+                      "Threat Level": "Medium  (CVSS: 4.8)",
+                      "NVT": " Cleartext Transmission of Sensitive Information via HTTP  (OID: 1.3.6.1.4.1.25623.1.0.108440)",
+                      "Summary": "The host / application transmits sensitive information (username, passwords) in  cleartext via HTTP. ",
+                      "Vulnerability": "The following URLs requires Basic Authentication (URL:realm name):,,http://pc-sideri.nic.it/:\"Restricted Access\"",
+                      "Impact": "An attacker could use this situation to compromise or eavesdrop on the HTTP communication between the client and the server using a man-in-the-middle attack to get access to sensitive data like usernames or passwords. ",
+                      "Solution": "<b>Solution type: Workaround Enforce the transmission of sensitive data via an encrypted SSL/TLS connection. Additionally make sure the host / application is redirecting all users to the secured SSL/TLS connection before allowing to input sensitive data into the mentioned functions. ",
+                      "Affected Software/OS": "Hosts / applications which doesn't enforce the transmission of sensitive data via an encrypted SSL/TLS connection. ",
+                      "Vulnerability Detection Method": "Evaluate previous collected information and check if the host / application is not enforcing the transmission of sensitive data via an encrypted SSL/TLS connection. The script is currently checking the following: - HTTP Basic Authentication (Basic Auth) - HTTP Forms (e.g. Login) with input field of type 'password' Details: Cleartext Transmission of Sensitive Information via HTTP (OID: 1.3.6.1.4.1.25623.1.0.108440) Version used: $Revision: 9501 $ ",
+                      "References": "  Other: https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management    https://www.owasp.org/index.php/Top_10_2013-A6-Sensitive_Data_Exposure    https://cwe.mitre.org/data/definitions/319.html "
+                    },
+                    "Security Issues 2": {
+                      "Threat Level": "Low  (CVSS: 2.6)",
+                      "NVT": " TCP timestamps  (OID: 1.3.6.1.4.1.25623.1.0.80091)",
+                      "Summary": "The remote host implements TCP timestamps and therefore allows to compute  the uptime. ",
+                      "Vulnerability": "It was detected that the host implements RFC1323.,,The following timestamps were retrieved with a delay of 1 seconds in-between:,Packet 1: 1532107171,Packet 2: 1532107456",
+                      "Impact": "A side effect of this feature is that the uptime of the remote host can sometimes be computed. ",
+                      "Solution": "<b>Solution type: Mitigation To disable TCP timestamps on linux add the line 'net.ipv4.tcp_timestamps = 0' to /etc/sysctl.conf. Execute 'sysctl -p' to apply the settings at runtime. To disable TCP timestamps on Windows execute 'netsh int tcp set global timestamps=disabled' Starting with Windows Server 2008 and Vista the timestamp can not be completely disabled. The default behavior of the TCP/IP stack on this Systems is to not use the Timestamp options when initiating TCP connections but use them if the TCP peer that is initiating communication includes them in their synchronize (SYN) segment. See also: http://www.microsoft.com/en-us/download/details.aspx?id=9152 ",
+                      "Affected Software/OS": "TCP/IPv4 implementations that implement RFC1323. ",
+                      "Vulnerability Insight": "The remote host implements TCP timestamps as defined by RFC1323. ",
+                      "Vulnerability Detection Method": "Special IP packets are forged and sent with a little delay in between to the target IP. The responses are searched for a timestamps. If found the timestamps are reported. Details: TCP timestamps (OID: 1.3.6.1.4.1.25623.1.0.80091) Version used: $Revision: 9035 $ ",
+                      "References": " Other: http://www.ietf.org/rfc/rfc1323.txt  "
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

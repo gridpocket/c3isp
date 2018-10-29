@@ -46,7 +46,7 @@ function detectBody(lines) {
       }
     });
     body = body.toString().replace(',', '\n');
-    json.object.email_attributes.body = body;
+    json.object.email_attributes.body = lines.toString().replace(',', '\n');
     return resolve();
   }).then(() => {
     cld.detect(body, (err, result) => {
@@ -349,11 +349,11 @@ const post = function convertToJSON(req, res) {
     });
 };
 
-router.route('/email')
+router.route('/emailToStixJSON')
   .post(upload.single('emailfile'), post);
 
 
-router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-router.use('/api/v1', router);
+router.use('/format-adapter/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use('/format-adapter/api/v1', router);
 
 module.exports = router;

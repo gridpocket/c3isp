@@ -15,28 +15,42 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 const multer = require('multer');
+const os = require('os');
 
 const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 
 
 const post = function removeStix(req, res) {
+  /* if (req.headers.user !== 'user' || req.headers.password !== 'password') {
+    return res.status(403).json({ error: 'Username or/and password incorrect' });
+  } */
   const { path } = req.file;
   fs.readFile(path, 'utf8', (err, data) => {
     if (err) {
+      fs.unlinkSync(path);
       return res.sendStatus(404);
     }
+    if (!data.startsWith('{')) {
+      fs.unlinkSync(path);
+      return res.sendStatus(400);
+    }
     const json = JSON.parse(data);
-    const objects = json.objects[0].cybox.objects[0].items[0];
+    let objects = json.objects[0].cybox.objects[0].items[0];
+    if (Array.isArray(objects)) {
+      objects = objects.join(os.EOL);
+    }
+    fs.unlinkSync(path);
+    res.setHeader('content-type', 'text/plain');
     return res.send(objects);
   });
 };
 
-router.route('/stix')
-  .post(upload.single('stix'), post);
+router.route('/convertDL')
+  .post(upload.single('file'), post);
 
 
-router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-router.use('/api/v1', router);
+router.use('/format-adapter/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use('/format-adapter/api/v1', router);
 
 module.exports = router;

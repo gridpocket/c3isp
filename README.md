@@ -5,40 +5,51 @@ First clone the reprository and make sure to node installed on your machine. Go 
 npm install
 ```
 
-### The script is using the port 8080. So make sure there is not another application using this port and run:
+### The script is using the port 9443. So make sure there is not another application using this port and run:
 - node converter.js
 
 ### How to use the converter
 Once the project is run, open your browser :
 
-- Go to  http://localhost:8080/api-docs
+- Go to  https://isic3isp.iit.cnr.it:9443/format-adapter/api-docs/
 
 
-## To use the Email TO JSON converter
+## To use the converter
 
-- Select POST /email and click on "Try it out"
-- Select the email file you want to convert (examples can be found Resources/Email)
-- Execute and see the results.
+- Select POST /convert and click on "Try it out"
+- Select the file you want to convert : EML or CSV (examples can be found in the Resources folder)
+- Execute and see the results in the responses.
+- If it receives a data already in STIX, it return the same data without doing any change
 
+### Request URL :
 
-## To use the CSV to CEF
+```bash
+https://isic3isp.iit.cnr.it:9443/format-adapter/api/v1/convert
+```
 
-- Select POST /csv and click on "Try it out"
-- Select the csv file you want to convert (examples can be found Resources/CSV)
-- Execute and see the results.
+### Example of CURL : 
+
+```bash
+curl -X POST "https://isic3isp.iit.cnr.it:9443/format-adapter/api/v1/convert" -H  "accept: application/json" -H  "Content-Type: multipart/form-data" -F "file=@name_of_the_file_your_want_to_convert.extension;type=application/json"
+```
+
 
 ## Remove the stix
 
-- Select POST /stix and click on "Try it out"
-- Select the JSON file you want to convert (examples can be found Resources/Stix)
+- Select POST /convertDL and click on "Try it out"
+- Select the JSON file you want to convert (examples can be found in Resources/Stix folder)
 - It can be either the conversion of an email or a csv.
 - Execute and see the results.
 
-### Results
 
+### Request URL :
 
-Three type of responses can be sent :
+```bash
+https://isic3isp.iit.cnr.it:9443/format-adapter/api/v1/convertDL
+```
 
-- '200' : The file has been converted
-- '404' : The file doesnt exist in the Resources directory
-- '500' : An error has occured
+### Example of CURL : 
+
+```bash
+curl -X POST "https://isic3isp.iit.cnr.it:9443/format-adapter/api/v1/convertDL" -H  "accept: text/plain" -H  "Content-Type: multipart/form-data" -F "file=@name_of_the_file_your_want_to_un_stix.extension;type=application/json"
+```

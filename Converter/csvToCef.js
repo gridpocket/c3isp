@@ -7,8 +7,8 @@
 *
 * @File name:  csvToCef.js
 * @Date:   2018-04-25
-* @Last Modified by:   paps
-* @Last Modified time: 2018-06-07
+* @Last Modified by:   papa.niamadio
+* @Last Modified time: 2018-10-04
 *
 * @Description: This script enables to convert log files from CSV format to CEF format
 */
@@ -62,13 +62,13 @@ function processFiles(fileName, originalName, cb) {
         let newLine = part1;
         newLine += `src=${line[3].split('#')[0]}`;
         newLine += ` spt=${line[3].split('#')[1]}`;
-        newLine += ` msg=${line[7]}`;
+        newLine += ` msg=${line[6]}`;
         // Need to copy from 'IN A -EDC (192.168.1.9)' with IN at the index 8
-        for (let i = 8; i < line.length; i += 1) {
-          newLine += `${line[i]}`;
+        for (let i = 7; i < line.length; i += 1) {
+          newLine += ` ${line[i]}`;
         }
         newLine += ` end=${new Date(`${line[0]}, ${line[1]}`).getTime()}`;
-        newLine += ' dtz=Europe/Berlin \n';
+        newLine += ' dtz=Europe/Berlin,';
 
         fs.appendFile(`${originalName}.cef`, newLine, (error) => {
           if (error) throw error;
@@ -86,9 +86,8 @@ function processFiles(fileName, originalName, cb) {
         newLine += ` dpt=${line[6].split(':')[1]}`;
         newLine += ` proto=${line[3]}`;
         newLine += ` end=${new Date(line[0]).getTime()}`;
-        newLine += ' dtz=Europe/Berlin \n';
-        
-        if(index > 1){
+        newLine += ' dtz=Europe/Berlin,';
+        if (index > 1) {
           fs.appendFile(`${originalName}.cef`, newLine, (error) => {
             if (error) throw error;
           });
@@ -113,12 +112,12 @@ const post = function convertToJSON(req, res, next) {
           if (err) {
             return reject(res.sendStatus(404));
           }
-          contentToDisplay = data;
-
+          contentToDisplay = data.split(',');
+          contentToDisplay.pop();
           return resolve();
         });
-        fs.unlink(path, (err) => {
-          if(err) return err;
+        ([path, req.file.path]).forEach((fileToDelete) => {
+          fs.unlinkSync(fileToDelete);
         });
       });
     }
@@ -155,11 +154,11 @@ const post = function convertToJSON(req, res, next) {
   });
 };
 
-router.route('/csv/')
+router.route('/csvToStixCEF/')
   .post(upload.single('csvfile'), post);
 
 
-router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-router.use('/api/v1', router);
+router.use('/format-adapter/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use('/format-adapter/api/v1', router);
 
 module.exports = router;

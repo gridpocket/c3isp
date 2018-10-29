@@ -3,44 +3,57 @@
     "info": {
         "version": "1.0.0",
         "title": "Converter",
-        "description": "API to convert CSV to CEF Format and Email to JSON Format"
+        "description": "API to convert CTI data into CEF or JSON Format with a STIX layer"
     },
-    "host": "localhost:8080",
-    "basePath": "/api/v1",
+    "host": "localhost:9443",
+    "basePath": "/format-adapter/api/v1",
     "schemes": [
         "http"
     ],
-    "consumes": [
-        "application/json"
-    ],
-    "produces": [
-        "application/json"
-    ],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "basic",
+            "name": "Authorization",
+            "in:": "header"
+            }
+    },
     "paths": {
-        "/csv": {
+        "/convert": {
             "post": {
-                "summary": "Convert the CSV to CEF",
+                "summary": "Convert CTI data to the right format and add STIX layer",
                 "tags": [
-                    "csvfile"
+                    "Format Adapter"
                 ],
                 "consumes": [
                     "multipart/form-data"
                 ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": {
+                 "basicAuth": ["Authorization"]
+                },
             "parameters": [
                 {
-                    "name": "csvfile",
+                    "name": "file",
                     "in": "formData",
                     "required": true,
-                    "description": "csv file we want to convert",
+                    "description": "File to convert",
                     "type": "file"
                 }
             ],
                 "responses": {
                     "200": {
-                        "description": "The csv has been converted"
+                        "description": "OK"
                     },
                     "404": {
-                        "description": "The csv doesnt exist in the Email directory"
+                        "description": "File not found"
+                    },
+                    "400": {
+                        "description": "File not recognised"
+                    },
+                    "403": {
+                        "description": "Authentification error"
                     },
                     "500": {
                         "description": "An error has occured"
@@ -48,61 +61,49 @@
                 }
             }
         },
-        "/email": {
+        "/convertDL": {
             "post": {
-                "summary": "Convert the email to JSON",
+                "summary": "Remove STIX layer",
                 "tags": [
-                    "emailfile"
+                    "Format Adapter"
                 ],
                 "consumes": [
                     "multipart/form-data"
                 ],
+                "produces": [
+                    "text/plain"
+                ],
             "parameters": [
                 {
-                    "name": "emailfile",
+                    "name": "file",
                     "in": "formData",
                     "required": true,
-                    "description": "file of the email we want to convert",
+                    "description": "File to unStix",
                     "type": "file"
+                }, {
+                    "name": "user",
+                    "in": "header",
+                    "description": "user name",
+                    "required": true,
+                    "type": "string"
+                },  {
+                    "name": "password",
+                    "in": "header",
+                    "description": "password",
+                    "required": true,
+                    "type": "string",
+                    "format": "password"
                 }
             ],
                 "responses": {
                     "200": {
-                        "description": "The email has been converted"
+                        "description": "OK"
                     },
-                    "404": {
-                        "description": "The email doesnt exist in the Email directory"
+                    "400": {
+                        "description": "The file is not a JSON with a stix"
                     },
-                    "500": {
-                        "description": "An error has occured"
-                    }
-                }
-            }
-        },
-        "/stix": {
-            "post": {
-                "summary": "Remove the stix from the response",
-                "tags": [
-                    "stix"
-                ],
-                "consumes": [
-                    "multipart/form-data"
-                ],
-            "parameters": [
-                {
-                    "name": "stix",
-                    "in": "formData",
-                    "required": true,
-                    "description": "JSON file with the stix we want to remove",
-                    "type": "file"
-                }
-            ],
-                "responses": {
-                    "200": {
-                        "description": "The stix has been removed"
-                    },
-                    "404": {
-                        "description": "The file don't exist"
+                    "403": {
+                        "description": "Authentification error"
                     },
                     "500": {
                         "description": "An error has occured"
@@ -112,35 +113,25 @@
         }
     },
     "definitions": {
-        "emailfile": {
+        "convert": {
           "required": [
-            "emailfile"
+            "file"
           ],
           "properties": {
-            "emailfile": {
+            "file": {
               "type": "file"
             }
           }
         },
-        "csvfile": {
+        "convertDL": {
             "required": [
-              "csvfile"
+              "file"
             ],
             "properties": {
-              "csvfile": {
+              "file": {
                 "type": "file"
               }
             }
-        },
-          "stix": {
-            "required": [
-              "stix"
-            ],
-            "properties": {
-              "stix": {
-                "type": "file"
-              }
-            }
-        }
+          }
     }
 }
